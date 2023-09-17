@@ -8,6 +8,8 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
+variables:
+ tag: $(build.buildId)
 
 steps:
 - script: echo Hello, world!
@@ -25,4 +27,4 @@ steps:
     kubernetesServiceConnection: 'AKS'
     namespace: 'default'
     manifests: '**/deploy.yaml'
-    containers: 'abhiraj1289/testing'
+    containers: 'abhiraj1289/testing:$(tag)'
