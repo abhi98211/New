@@ -1,2 +1,2 @@
 FROM atlassian/jira-software
-copy **/Dockerfile /var/atlassian/
+COPY **/Dockerfile /var/atlassian/Dockerfile
