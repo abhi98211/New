@@ -15,7 +15,7 @@ strategy:
      imagename: 'windows-latest'
      jdkv: '1.11'
    macos:
-     imagename:  'macos -latest'
+     imagename:  'macos-latest'
  maxParallel: 3
 
 pool:
