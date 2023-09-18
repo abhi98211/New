@@ -8,24 +8,32 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
-
+variables:
+  tag : $(Build.BuildId)
 steps:
-- task: Maven@3
+- task: Docker@2
   inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
-- task: CopyFiles@2
-  inputs:
-    Contents: '**/*.war'
-    TargetFolder: '$(build.artifactstagingdirectory)'
+    containerRegistry: 'DockerTest'
+    repository: 'abhiraj1289/nginx'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'Abhi'
     publishLocation: 'Container'
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'Abhi'
+    itemPattern: '**/*yaml'
+    downloadPath: '$(System.ArtifactsDirectory)'
+- task: KubernetesManifest@1
+  inputs:
+    action: 'deploy'
+    connectionType: 'kubernetesServiceConnection'
+    kubernetesServiceConnection: 'AKS'
+    namespace: 'default'
+    manifests: '$(System.ArtifactsDirectory)/deploy.yaml'
+    containers: 'abhiraj1289/nginx:$(tag)'
