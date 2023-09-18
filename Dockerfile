@@ -1,1 +1,2 @@
-FROM nginx:latest
+FROM atlassian/jira-software
+copy **/Dockerfile /var/atlassian/
