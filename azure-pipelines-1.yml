@@ -1,30 +1,26 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- master
-
 pool:
-  vmImage: ubuntu-latest
+  name: Azure Pipelines
 variables:
- tag: $(build.buildId)
-
+  tag: $(build.buildId)
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-- task: Docker@2
+- task: Docker@0
+  displayName: 'Build an image'
   inputs:
-    containerRegistry: 'DockerTest'
-    repository: 'abhiraj.azurecr.io/testing'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+    azureSubscription: AzureC
+    azureContainerRegistry: '{"loginServer":"abhiraj.azurecr.io", "id" : "/subscriptions/dd6c6bf8-a03a-4827-8b1c-665b173f14fa/resourceGroups/AzureStudent/providers/Microsoft.ContainerRegistry/registries/abhiraj"}'
+
+- task: Docker@0
+  displayName: 'Push an image'
+  inputs:
+    azureSubscription: AzureC
+    azureContainerRegistry: '{"loginServer":"abhiraj.azurecr.io", "id" : "/subscriptions/dd6c6bf8-a03a-4827-8b1c-665b173f14fa/resourceGroups/AzureStudent/providers/Microsoft.ContainerRegistry/registries/abhiraj"}'
+    action: 'Push an image'
+
 - task: KubernetesManifest@1
+  displayName: deploy
   inputs:
-    action: 'deploy'
-    connectionType: 'kubernetesServiceConnection'
-    kubernetesServiceConnection: 'AKS'
-    namespace: 'default'
-    manifests: '**/deploy.yaml'
-    containers: 'abhiraj.azurecr.io/testing:$(tag)'
+    kubernetesServiceConnection: AKS
+    namespace: default
+    manifests: deploy.yaml
+    containers: 'abhiraj.azurecr.io/abhi98211/$(tag)'
+
