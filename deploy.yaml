@@ -5,4 +5,4 @@ metadata:
 spec:
   containers:
   - name: test
-    image: abhiraj.azurecr.io/abhi98211/new:123
+    image: abhiraj1289/jira
