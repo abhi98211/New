@@ -6,33 +6,44 @@
 trigger:
 - master
 
+strategy:
+ matrix:
+   linux:
+     imagename: 'ubuntu-latest'
+     jdkv: '1.10'
+   windows: 
+     imagename: 'windows-latest'
+     jdkv: '1.11'
+   macos:
+     imagename:  'macos -latest'
+ maxParallel: 3
+
 pool:
-  vmImage: ubuntu-latest
-variables:
-  tag : $(Build.BuildId)
-steps:
-- task: Docker@2
+  vmImage: $(imagename)
+steps:  
+- task: Maven@4
   inputs:
-    containerRegistry: 'DockerTest'
-    repository: 'abhiraj1289/nginx'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'Abhi'
-    publishLocation: 'Container'
-- task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'current'
-    downloadType: 'specific'
-    itemPattern: '**/*yaml'
-    downloadPath: '$(System.ArtifactsDirectory)'
-- task: KubernetesManifest@1
-  inputs:
-    action: 'deploy'
-    connectionType: 'kubernetesServiceConnection'
-    kubernetesServiceConnection: 'AKS'
-    namespace: 'default'
-    manifests: '$(System.ArtifactsDirectory)/deploy.yaml'
-    containers: 'abhiraj1289/nginx:$(tag)'
+    mavenPomFile: 'pom.xml'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: $(jdkv)
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
+  jobs:
+  - job: ErrorHandler
+    dependsOn: Work
+    condition: failed()
+    steps: 
+    - bash: |
+        az boards work-item create \
+          --title "Build $(build.buildNumber) failed" \
+          --type bug \
+          --org $(System.TeamFoundationCollectionUri) \
+          --project $(System.TeamProject)
+      env: 
+        AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+      displayName: 'Create work item on failure'
+
