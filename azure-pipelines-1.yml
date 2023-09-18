@@ -22,5 +22,5 @@ steps:
     kubernetesServiceConnection: AKS
     namespace: default
     manifests: deploy.yaml
-    containers: 'abhiraj.azurecr.io/abhi98211/$(tag)'
+    containers: 'abhiraj.azurecr.io/abhi98211/new:123'
 
